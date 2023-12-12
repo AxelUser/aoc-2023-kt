@@ -1,8 +1,13 @@
+import kotlin.math.absoluteValue
 import kotlin.math.ceil
 
 private data class Point(val x: Int, val y: Int) {
     operator fun plus(other: Point): Point {
         return Point(x + other.x, y + other.y)
+    }
+
+    fun shoelace(other: Point): Long {
+        return (y.toLong() + other.y) * (x.toLong() - other.x)
     }
 }
 
@@ -64,19 +69,24 @@ fun main() {
         error("Failed to find S")
     }
 
-    fun List<String>.findStart(): Pipe {
+    fun List<String>.findStart(): Pair<Pipe, Char> {
         val start = findStartPoint()
+        val possibleWays = mutableListOf<Direction>()
         for (dir in Direction.entries) {
-            move(start, dir)?.also { return Pipe(start, dir) }
+            move(start, dir)?.also { possibleWays += dir }
         }
 
-        error("Failed to find starting point")
+        check(possibleWays.size == 2) { "Expect exactly 2 exits from Start" }
+        val pipe = possibleWays.first().let { Pipe(start, it) }
+        val symbol = symbols.filter { (_, dirs) -> possibleWays.containsAll(dirs) }.keys.single()
+        return pipe to symbol
     }
 
     fun List<String>.traverseLoop(): Sequence<Point> {
-        val start = findStart()
+        val (start, _) = findStart()
         var next = move(start.point, start.exit) ?: error("Can't traverse")
         return sequence {
+            yield(start.point)
             while (next.point != start.point) {
                 yield(next.point)
                 next = move(next.point, next.exit) ?: error("Can't traverse from $next")
@@ -90,14 +100,15 @@ fun main() {
     }
 
     fun part2(input: List<String>): Long {
-        return 0L
+        val loop = input.traverseLoop().toList()
+        val area = loop.plus(loop.first()).windowed(2).sumOf { (a, b) -> a.shoelace(b) }.absoluteValue
+        return (area / 2L) - (loop.size / 2) + 1L
     }
 
-    val testInput = readInput("Day10_test")
-    var testResult = part1(testInput)
+    var testResult = part1(readInput("Day10_1_test"))
     check(testResult == 8L)
-    testResult = part2(testInput)
-    check(testResult == 0L)
+    testResult = part2(readInput("Day10_2_test"))
+    check(testResult == 8L)
 
     val input = readInput("Day10")
     part1(input).println()
