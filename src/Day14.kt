@@ -45,6 +45,14 @@ fun main() {
 
     data class Shifts(val start: Point2D, val rowShift: Day14Direction, val itemRowSelectionShift: Day14Direction, val itemShift: Day14Direction)
 
+    fun List<CharArray>.copy(): List<CharArray> {
+        val copy = mutableListOf<CharArray>()
+        for (arr in this) {
+            copy += arr.copyOf()
+        }
+        return copy
+    }
+
     fun List<CharArray>.tiltInDirection(direction: Day14Direction): List<CharArray> {
         val (maxX, maxY) = getEnds()
         val config = when (direction) {
@@ -56,23 +64,23 @@ fun main() {
             )
 
             Day14Direction.East -> Shifts(
-                    start = Point2D(0, 0),
-                    rowShift = Day14Direction.South,
-                    itemRowSelectionShift = Day14Direction.East,
+                    start = Point2D(maxX.toLong(), 0),
+                    rowShift = Day14Direction.West,
+                    itemRowSelectionShift = Day14Direction.South,
                     itemShift = direction
             )
 
             Day14Direction.South -> Shifts(
-                    start = Point2D(0, 0),
-                    rowShift = Day14Direction.South,
+                    start = Point2D(0, maxY.toLong()),
+                    rowShift = Day14Direction.North,
                     itemRowSelectionShift = Day14Direction.East,
                     itemShift = direction
             )
 
             Day14Direction.West -> Shifts(
                     start = Point2D(0, 0),
-                    rowShift = Day14Direction.South,
-                    itemRowSelectionShift = Day14Direction.East,
+                    rowShift = Day14Direction.East,
+                    itemRowSelectionShift = Day14Direction.South,
                     itemShift = direction
             )
 
@@ -99,18 +107,43 @@ fun main() {
         return input.parse().tiltInDirection(Day14Direction.North).calcLoad()
     }
 
-    fun List<CharArray>.cycle() {
-        for (dir in Day14Direction.entries) {
-            tiltInDirection(dir)
+    fun List<CharArray>.getHashCode(direction: Day14Direction): Int {
+        val formatted = joinToString(separator = "\n") { String(it) }
+        return (direction to formatted).hashCode()
+    }
+
+    fun generateDirectionSequence() = sequence {
+        while (true) {
+            for (dir in Day14Direction.entries) yield(dir)
         }
     }
 
-    fun part2(input: List<String>): Long {
-        return input.parse().apply {
-            repeat(10000000){
-                cycle()
+    fun List<CharArray>.cycle(cycles: Long): List<CharArray> {
+        val seen = hashMapOf<Int, Int>()
+        val completed = mutableListOf<List<CharArray>>()
+        var current = this
+        val totalTilts = cycles * Day14Direction.entries.size
+        for (dir in generateDirectionSequence()) {
+            val hash = current.getHashCode(dir)
+            if (seen.containsKey(hash)) {
+                // cycle detected
+                val cycleStarted = seen[hash]!!
+                val remaining = totalTilts - completed.size
+                val cycleLen = completed.size - cycleStarted
+                val elemInCycle = (remaining - 1) % cycleLen
+                return completed[cycleStarted + elemInCycle.toInt()]
+            } else {
+                completed += current.copy().tiltInDirection(dir)
+                seen[hash] = completed.lastIndex
+                current = completed.last()
             }
-        }.calcLoad()
+        }
+
+        return current
+    }
+
+    fun part2(input: List<String>): Long {
+        return input.parse().cycle(1000000000).calcLoad()
     }
 
     val testInput = readInput("Day14_test")
@@ -121,5 +154,5 @@ fun main() {
 
     val input = readInput("Day14")
     part1(input).println()
-    //part2(input).println()
+    part2(input).println()
 }
