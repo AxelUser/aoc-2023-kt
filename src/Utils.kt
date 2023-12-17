@@ -1,5 +1,6 @@
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.*
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
 import kotlin.io.path.readText
@@ -34,7 +35,44 @@ data class Point2D(val x: Long, val y: Long) {
         return Point2D(x + other.x, y + other.y)
     }
 
+    operator fun unaryMinus(): Point2D {
+        return Point2D(-x, -y)
+    }
+
+    operator fun times(times: Long): Point2D {
+        return Point2D(x * times, y * times)
+    }
+
     fun l1(other: Point2D): Long {
         return (x - other.x).absoluteValue + (y - other.y).absoluteValue
     }
 }
+
+fun <T> dijkstraSearch(
+    startingPoints: List<T>,
+    neighborProducer: (T) -> List<T>,
+    costFunction: (T) -> Long,
+): Map<T, Long> {
+    data class State(val node: T, val distance: Long)
+
+    val bestCosts = mutableMapOf<T, Long>()
+    val boundary = PriorityQueue<State>(compareBy { it.distance })
+
+    for (start in startingPoints) boundary += State(start, 0)
+
+    while (boundary.isNotEmpty()) {
+        val (currentNode, currentCost) = boundary.poll()
+        if (currentNode in bestCosts) continue
+
+        bestCosts[currentNode] = currentCost
+
+        for (nextNode in neighborProducer(currentNode)) {
+            if (nextNode !in bestCosts) {
+                boundary += State(nextNode, currentCost + costFunction(nextNode))
+            }
+        }
+    }
+
+    return bestCosts
+}
+
