@@ -26,23 +26,8 @@ fun main() {
         return out
     }
 
-    fun List<Point2D>.printMap() {
-        val maxX = maxOf { it.x }
-        val maxY = maxOf { it.y }
-        val set = toSet()
-        for (y in 0..maxY) {
-            for (x in 0..maxX) {
-                if (set.contains(Point2D(x, y))) {
-                    print('#')
-                } else print('.')
-            }
-            kotlin.io.println()
-        }
-    }
-
     fun List<String>.solve(expandBy: Long): Long {
         val expanded = parse(expandBy)
-        //expanded.printMap()
         var sum = 0L
         for (i in 0..expanded.lastIndex) {
             for (j in i + 1..expanded.lastIndex) {
