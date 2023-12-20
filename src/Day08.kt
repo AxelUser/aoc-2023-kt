@@ -43,15 +43,6 @@ fun main() {
         return input.traverse("AAA") { it == "ZZZ" }.count().toLong()
     }
 
-    fun lcm(a: Long, b: Long): Long {
-        fun gcd(a: Long, b: Long): Long {
-            if (b == 0L) return a
-            return gcd(b, a % b)
-        }
-
-        return a * (b / gcd(a, b))
-    }
-
     fun part2(input: TravelMap): Long {
         return input.path.keys.filter { it[2] == 'A' }
                 .map { start -> input.traverse(start) { it[2] == 'Z' }.count().toLong() }

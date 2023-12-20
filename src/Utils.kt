@@ -105,3 +105,12 @@ fun <T> dijkstraSearch(
     return bestCosts
 }
 
+fun lcm(a: Long, b: Long): Long {
+    fun gcd(a: Long, b: Long): Long {
+        if (b == 0L) return a
+        return gcd(b, a % b)
+    }
+
+    return a * (b / gcd(a, b))
+}
+
