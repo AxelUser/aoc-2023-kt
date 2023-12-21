@@ -17,13 +17,28 @@ fun readText(name: String) = Path("src/$name.txt").readText()
  * Converts string to md5 hash.
  */
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
-        .toString(16)
-        .padStart(32, '0')
+    .toString(16)
+    .padStart(32, '0')
 
 /**
  * The cleaner shorthand for printing output.
  */
 fun Any?.println() = println(this)
+
+fun List<CharArray>.containsPoint(point: Point2D): Boolean {
+    val maxX = this[0].lastIndex
+    val maxY = lastIndex
+    return point.x in 0..maxX && point.y in 0..maxY
+}
+
+fun List<CharArray>.getAdjacent4(point: Point2D): Sequence<Point2D> {
+    val map = this
+    return sequence {
+        for (pO in sequenceOf(0L, 1, 0, -1, 0).windowed(2).map { (x, y) -> Point2D(x, y) }) {
+            (point + pO).takeIf { map.containsPoint(it) }?.also { yield(it) }
+        }
+    }
+}
 
 data class Point2D(val x: Long, val y: Long) {
     fun isInBounds(maxX: Int, maxY: Int): Boolean {
