@@ -142,8 +142,30 @@ fun main() {
         return canRemove.count().toLong()
     }
 
+    fun ConnectedBlock.countFalling(): Long {
+        val queue = ArrayDeque(supports)
+        val visited = mutableSetOf<Int>()
+        val removed = mutableSetOf(id)
+        while (queue.isNotEmpty()) {
+            val block = queue.removeFirst()
+            if (block.id in visited) continue
+            if (block.supportedBy.any { it.id !in removed }) continue
+            visited += block.id
+            removed += block.id
+
+            block.supports.forEach { next ->
+                if (next.id !in visited) {
+                    queue += next
+                }
+            }
+        }
+
+        return removed.size.toLong()
+    }
+
     fun part2(input: List<Block>): Long {
-        return 0L
+        val all = input.simulate().bfs().drop(1).toList()
+        return all.sumOf { block -> block.countFalling() - 1}
     }
 
     val testInput = readInput("Day22_test").parse()
@@ -151,7 +173,7 @@ fun main() {
     var testResult = part1(testInput)
     check(testResult == 5L)
     testResult = part2(testInput)
-    check(testResult == 0L)
+    check(testResult == 7L)
 
     val input = readInput("Day22").parse()
     part1(input).println()
