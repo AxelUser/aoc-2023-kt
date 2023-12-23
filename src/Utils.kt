@@ -61,13 +61,21 @@ data class Point2D(val x: Long, val y: Long) {
     fun l1(other: Point2D): Long {
         return (x - other.x).absoluteValue + (y - other.y).absoluteValue
     }
+
+    operator fun plus(dir: Direction4): Point2D {
+        return this + dir.offset
+    }
 }
 
 enum class Direction4(val offset: Point2D) {
     Up(Point2D(0, -1)),
     Right(Point2D(1, 0)),
     Down(Point2D(0, 1)),
-    Left(Point2D(-1, 0)),
+    Left(Point2D(-1, 0));
+
+    fun isOppositeTo(other: Direction4): Boolean {
+        return other.offset == -offset
+    }
 }
 
 fun List<Point2D>.shoelaceArea(): Long {
