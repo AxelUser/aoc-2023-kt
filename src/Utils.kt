@@ -137,3 +137,4 @@ fun lcm(a: Long, b: Long): Long {
     return a * (b / gcd(a, b))
 }
 
+data class Point3D(val x: Long, val y: Long, val z: Long)
